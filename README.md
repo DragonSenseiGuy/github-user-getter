@@ -4,7 +4,7 @@ Great name I know :), this is a Flaks and Bulma application where you enter a pe
 ## Why?
 Q: Why should I use this when I can go to their profile and see their info too?
 
-A: Because you can ans it will make you look cool 😎.
+A: Because you can and it will make you look cool 😎.
 
 ## Installation
 First make a virtual environment using:
