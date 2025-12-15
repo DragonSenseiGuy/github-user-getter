@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{{ user.username }} - Github User Finder</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .profile-image {
+            border-radius: 50%;
+            margin-bottom: 1rem;
+        }
+        .pinned-repo-card {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .pinned-repo-card .content {
+            flex-grow: 1;
+        }
+        .main-page-hero {
+            background-color: #f5f5f5;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar is-dark" role="navigation" aria-label="main navigation">
+        <div class="navbar-brand">
+            <a class="navbar-item" href="/">
+                <strong>Github User Finder</strong>
+            </a>
+        </div>
+        <div class="navbar-menu">
+            <div class="navbar-end">
+                <div class="navbar-item">
+                    <form action="/" method="GET">
+                        <div class="field has-addons">
+                            <div class="control">
+                                <input class="input is-small" type="text" name="username" placeholder="Search GitHub user">
+                            </div>
+                            <div class="control">
+                                <button class="button is-info is-small" type="submit">
+                                    <span class="icon is-small">
+                                        <i class="fas fa-search"></i>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <section class="section">
+        <div class="container">
+            <div class="columns">
+                <div class="column is-one-quarter">
+                    <div class="box">
+                        <figure class="image is-square">
+                            <img class="profile-image" src="{{ user.avatar_url }}" alt="{{ user.username }} avatar">
+                        </figure>
+                        <h1 class="title is-4">{{ user.name }}</h1>
+                        <h2 class="subtitle is-5 has-text-grey">{{ user.username }}</h2>
+                        
+                        <div class="content">
+                            <p>{{ user.bio }}</p>
+                        </div>
+
+                        <div class="level is-mobile">
+                            <div class="level-item has-text-centered">
+                                <div>
+                                    <p class="heading">Repos</p>
+                                    <p class="title">{{ user.public_repos }}</p>
+                                </div>
+                            </div>
+                            <div class="level-item has-text-centered">
+                                <div>
+                                    <p class="heading">Followers</p>
+                                    <p class="title">{{ user.followers }}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr>
+
+                        <div class="content is-small">
+                            {% if user.website %}
+                            <p>
+                                <span class="icon"><i class="fas fa-link"></i></span>
+                                <a href="{{ user.website }}" target="_blank">{{ user.website }}</a>
+                            </p>
+                            {% endif %}
+                            
+                            {% if user.twitter_username %}
+                            <p>
+                                <span class="icon"><i class="fab fa-twitter"></i></span>
+                                <a href="https://twitter.com/{{ user.twitter_username }}" target="_blank">@{{ user.twitter_username }}</a>
+                            </p>
+                            {% endif %}
+                            
+                             {% if user.location %}
+                            <p>
+                                <span class="icon"><i class="fas fa-map-marker-alt"></i></span>
+                                {{ user.location }}
+                            </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="column">
+
+                    <div class="box">
+                        <h3 class="title is-5">Contribution Graph</h3>
+                        <figure class="image">
+                            <img src="https://ghchart.rshah.org/{{ user.username }}" alt="Contribution Graph">
+                        </figure>
+                    </div>
+
+                    <h3 class="title is-4">Pinned Repositories</h3>
+                    <div class="columns is-multiline">
+                        {% for repo in user.pinned_repos %}
+                        <div class="column is-half">
+                            <div class="card pinned-repo-card">
+                                <div class="card-content">
+                                    <div class="media">
+                                        <div class="media-content">
+                                            <p class="title is-5"><a href="{{ repo.url }}" target="_blank">{{ repo.name }}</a></p>
+                                        </div>
+                                    </div>
+                                    <div class="content">
+                                        {{ repo.description }}
+                                        <br>
+                                        <div class="tags mt-3">
+                                            <span class="tag is-info is-light">{{ repo.language }}</span>
+                                            <span class="tag is-warning is-light"><i class="fas fa-star mr-1"></i> {{ repo.stars }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</body>
+</html>
