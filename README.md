@@ -1,5 +1,5 @@
 # GitHub User Getter
-Great name I know :), this is a Flaks and Bulma application where you enter a persons gitHub username and you can get their github info.
+Great name I know :), this is a Flask and Bulma application where you enter a persons github username and you can get their github info.
 
 ## Why?
 Q: Why should I use this when I can go to their profile and see their info too?
