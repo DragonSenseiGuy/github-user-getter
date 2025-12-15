@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 import requests
 import os
 from dotenv import load_dotenv
@@ -7,9 +7,18 @@ load_dotenv()
 
 app = Flask(__name__)
 
+@app.route('/docs')
+def docs_index():
+    return send_from_directory('docs', 'index.html')
+
+@app.route('/docs/<path:path>')
+def docs_static(path):
+    return send_from_directory('docs', path)
+
 def get_github_user(username):
     token = os.getenv('GITHUB_TOKEN')
     headers = {'Authorization': f'token {token}'} if token else {}
+    using_token = bool(token)
 
     # Try GraphQL first (needs token) to get actual pinned repos
     if token:
@@ -48,47 +57,50 @@ def get_github_user(username):
           }
         }
         """
-        response = requests.post(
-            'https://api.github.com/graphql',
-            json={'query': query, 'variables': {'login': username}},
-            headers=headers
-        )
+        try:
+            response = requests.post(
+                'https://api.github.com/graphql',
+                json={'query': query, 'variables': {'login': username}},
+                headers=headers
+            )
 
-        if response.status_code == 200:
-            data = response.json()
-            if 'data' in data and data['data']['user']:
-                user = data['data']['user']
-                pinned_repos = []
-                for node in user['pinnedItems']['nodes']:
-                    if node:
-                        pinned_repos.append({
-                            "name": node['name'],
-                            "description": node['description'] or "",
-                            "language": node['primaryLanguage']['name'] if node['primaryLanguage'] else "N/A",
-                            "stars": node['stargazerCount'],
-                            "url": node['url']
-                        })
-                
-                return {
-                    "username": user['login'],
-                    "name": user['name'],
-                    "avatar_url": user['avatarUrl'],
-                    "bio": user['bio'],
-                    "public_repos": user['repositories']['totalCount'],
-                    "followers": user['followers']['totalCount'],
-                    "following": user['following']['totalCount'],
-                    "location": user['location'],
-                    "website": user['websiteUrl'],
-                    "twitter_username": user['twitterUsername'],
-                    "pinned_repos": pinned_repos
-                }
+            if response.status_code == 200:
+                data = response.json()
+                if 'data' in data and data['data']['user']:
+                    user = data['data']['user']
+                    pinned_repos = []
+                    for node in user['pinnedItems']['nodes']:
+                        if node:
+                            pinned_repos.append({
+                                "name": node['name'],
+                                "description": node['description'] or "",
+                                "language": node['primaryLanguage']['name'] if node['primaryLanguage'] else "N/A",
+                                "stars": node['stargazerCount'],
+                                "url": node['url']
+                            })
+                    
+                    return {
+                        "username": user['login'],
+                        "name": user['name'],
+                        "avatar_url": user['avatarUrl'],
+                        "bio": user['bio'],
+                        "public_repos": user['repositories']['totalCount'],
+                        "followers": user['followers']['totalCount'],
+                        "following": user['following']['totalCount'],
+                        "location": user['location'],
+                        "website": user['websiteUrl'],
+                        "twitter_username": user['twitterUsername'],
+                        "pinned_repos": pinned_repos
+                    }, using_token
+        except Exception:
+            pass
 
     # Fallback to REST API (Simulate Pinned by getting top starred)
     user_url = f"https://api.github.com/users/{username}"
     user_response = requests.get(user_url, headers=headers)
     
     if user_response.status_code != 200:
-        return None
+        return None, using_token
     
     user_data = user_response.json()
     
@@ -122,10 +134,11 @@ def get_github_user(username):
         "website": user_data.get('blog'),
         "twitter_username": user_data.get('twitter_username'),
         "pinned_repos": pinned_repos
-    }
+    }, using_token
 
 @app.route('/', methods=['GET', 'POST'])
 def home():
+    using_token = bool(os.getenv('GITHUB_TOKEN'))
     if request.method == 'POST':
         username = request.form.get('username')
         if username:
@@ -134,14 +147,14 @@ def home():
         username = request.args.get('username')
         if username:
             return redirect(url_for('user', username=username))
-    return render_template('index.html')
+    return render_template('index.html', using_token=using_token)
 
 @app.route('/user/<username>')
 def user(username):
-    user_data = get_github_user(username)
+    user_data, using_token = get_github_user(username)
     if not user_data:
         return f"User {username} not found", 404
-    return render_template('user.html', user=user_data)
+    return render_template('user.html', user=user_data, using_token=using_token)
 
 if __name__ == '__main__':
     app.run(debug=True)

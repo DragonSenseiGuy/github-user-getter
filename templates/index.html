@@ -13,6 +13,12 @@
         <div class="container">
           <div class="box">
               <h3 class="title is-3">Github User finder!</h3>
+              {% if not using_token %}
+              <div class="notification is-warning is-light">
+                  <button class="delete"></button>
+                  <strong>Note:</strong> Using public API. Rate limits apply and data (like pinned repos) may differ from actual GitHub profile.
+              </div>
+              {% endif %}
               <form method="POST" action="/">
                 <input class="input" type="text" name="username" placeholder="GitHub username" style="width: 400px;"/> 
                 <button class="button is-info" type="submit">Search!</button>
@@ -21,5 +27,16 @@
         </div>
       </div>
     </section>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+          const $notification = $delete.parentNode;
+
+          $delete.addEventListener('click', () => {
+            $notification.parentNode.removeChild($notification);
+          });
+        });
+      });
+    </script>
   </body>
 </html>

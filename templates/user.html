@@ -55,6 +55,12 @@
 
     <section class="section">
         <div class="container">
+            {% if not using_token %}
+            <div class="notification is-warning is-light mb-5">
+                <button class="delete"></button>
+                <strong>Note:</strong> Using public API. Rate limits apply and pinned repositories are simulated (top starred) as GraphQL access is restricted without a token.
+            </div>
+            {% endif %}
             <div class="columns">
                 <div class="column is-one-quarter">
                     <div class="box">
@@ -147,5 +153,16 @@
             </div>
         </div>
     </section>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        (document.querySelectorAll('.notification .delete') || []).forEach(($delete) => {
+          const $notification = $delete.parentNode;
+
+          $delete.addEventListener('click', () => {
+            $notification.parentNode.removeChild($notification);
+          });
+        });
+      });
+    </script>
 </body>
 </html>
